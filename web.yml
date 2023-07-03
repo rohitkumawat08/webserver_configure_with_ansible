@@ -1,0 +1,76 @@
+---
+ - name: configure webserver
+   hosts: all
+   vars: 
+             yum_install: 
+                           - httpd    
+                           - firewalld
+             services: 
+                          - httpd
+                          - firewalld
+             website_url:  https://www.free-css.com/assets/files/free-css-templates/download/page292/seomark.zip                
+   tasks:
+            - name: install http and firewalld packages
+              yum: 
+                     name: "{{ item }}"
+                     state: present
+              loop: 
+                      "{{ yum_install }}"
+            - name: restart httpd and firewalld services
+              service: 
+                        name: "{{ item }}"
+                        state: started
+                        enabled: yes
+              loop: 
+                     "{{ services }}"
+            - name: add httpd service in firewall
+              firewalld: 
+                          service: https
+                          permanent: true
+                          state: enabled
+
+            - name: add port in firewalld 
+              firewalld: 
+                          port: 80/tcp
+                          permanent: true
+                          state: enabled
+              register: port
+            - debug: 
+                      msg: "{{ port }}"
+           
+            - name: download website
+              get_url:  
+                        url: "{{ website_url }}"
+                        dest: /var/www/html
+            - name: stored website zip file in a variable
+              shell: ls /var/www/html
+              register: index
+
+            - name: unzip download file 
+              unarchive:
+                     src: /var/www/html/{{ index.stdout }}
+                     dest: /var/www/html
+                     remote_src: true
+
+            - name: delete unzip file
+              file: 
+                     path: /var/www/html/{{ index.stdout }}
+                     state: absent
+
+            - name: print unzip file name
+              shell: ls /var/www/html
+              register: unzip 
+                         
+                # - name: move all content to document root
+              # copy: 
+              #      src: /var/www/html/{{ unzip.stdout }}/*
+              #      dest: /var/www/html/
+              #      remote_src: true
+        
+            - name: move
+              shell: mv /var/www/html/{{ unzip.stdout }}/* /var/www/html
+
+
+
+
+                                    
