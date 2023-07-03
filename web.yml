@@ -59,14 +59,8 @@
 
             - name: print unzip file name
               shell: ls /var/www/html
-              register: unzip 
-                         
-                # - name: move all content to document root
-              # copy: 
-              #      src: /var/www/html/{{ unzip.stdout }}/*
-              #      dest: /var/www/html/
-              #      remote_src: true
-        
+              register: unzip
+              
             - name: move
               shell: mv /var/www/html/{{ unzip.stdout }}/* /var/www/html
 
